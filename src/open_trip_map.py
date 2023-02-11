@@ -1,14 +1,14 @@
 import os
 import time
 from platform import platform
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import requests
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import col, size, split
 
-from src.models import Place, PlaceDetails
+from src.models import PlaceRaw, PlaceDetailsRaw
 
 
 def new_spark_session(app_name: str) -> SparkSession:
@@ -124,61 +124,46 @@ def get_places_details(xids: List[str]) -> List[Dict[str, str]]:
     return places_details
 
 
-def extract(number_of_places: int) -> List[Dict[str, str]]:
+def places_to_df(places: List[Dict[str, str]], spark: SparkSession) -> DataFrame:
     """
-    Returns a list of places from opentripmap
-    :param number_of_places: number of objects to return from openapi (max 5000)
-    :type number_of_places: int
-    :return: list of places objects
-    :rtype: List[Dict[str, str]]
-    """
+    Transforms list of places objects into a df.
+    Extracts lon and lat fields from point field
 
-    if number_of_places > 5000:
-        raise ValueError('Daily number of requests exceeded, max number allowed is 5000')
-
-    places = get_places_info(
-        bbox=[2.028471, 2.283903, 41.315758, 41.451768],
-        kinds='accomodations',
-        limit=number_of_places
-    )
-
-    return places
-
-
-def transform(places: List[Dict[str, str]], spark: SparkSession) -> DataFrame:
-    """
-    Returns a dataframe with places filtering out skyscrapers kind and adding
-    details fetched for every single id passed in places
-
-    :param places: list of places object
-    :type places: List[Dict[str, str]]
-    :param spark: spark session
+    :param places: list of places retrieved from opentripmap apis
+    :type places: List[Dict[str, str]
+    :param spark: a spark session on which to create the dataframe
     :type spark: SparkSession
-    :return: a dataframe with all the transformations described above
+    :return: places objects converted into a spark df
     :rtype: DataFrame
     """
 
-    accommodations = spark.createDataFrame(data=places, schema=Place)
-    accommodations_flattened = (
-        accommodations.withColumn('lon', col('point').getField('lon'))
+    places = spark.createDataFrame(data=places, schema=PlaceRaw)
+    extract_lon_and_lat = (
+        places.withColumn('lon', col('point').getField('lon'))
         .withColumn('lat', col('point').getField('lat'))
         .drop('point')
     )
-    no_skyscraper_accommodations = (
-        accommodations_flattened.filter(~(col('kinds').contains('skyscrapers')))
-    )
-    add_number_of_kinds = (
-        no_skyscraper_accommodations.withColumn('kinds_amount', size(split(col('kinds'), ',')))
-    )
 
-    places_ids = add_number_of_kinds.select('xid').collect()
+    return extract_lon_and_lat
 
-    places_details = get_places_details([row.xid for row in places_ids])
 
-    places_details_df = spark.createDataFrame(places_details, PlaceDetails)
+def places_details_to_df(places_details: List[Dict[str, str]], spark: SparkSession) -> DataFrame:
+    """
+    Takes a list of places details as inputs, transforms it into a dataframe with the PlacesDetails schema.
+    Extracts all fields from the address column into their own
 
-    places_details_flatten = (
-        places_details_df.withColumn('country_code', col('address').getField('country_code'))
+    :param places_details: list of places details
+    :type: places_details: List[Dict[str, str]
+    :param spark: spark session
+    :type spark: SparkSession
+    :return: places details converted into a df
+    :rtype: DataFrame
+    """
+
+    df = spark.createDataFrame(places_details, PlaceDetailsRaw)
+
+    flatten_addresses = (
+        df.withColumn('country_code', col('address').getField('country_code'))
         .withColumn('country', col('address').getField('country'))
         .withColumn('city', col('address').getField('city'))
         .withColumn('postcode', col('address').getField('postcode').cast('integer'))
@@ -191,7 +176,65 @@ def transform(places: List[Dict[str, str]], spark: SparkSession) -> DataFrame:
         .drop('address')
     )
 
-    return add_number_of_kinds.join(places_details_flatten, on='xid')
+    return flatten_addresses
+
+
+def extract(number_of_places: int, spark: SparkSession) -> Tuple[DataFrame, DataFrame]:
+    """
+    Fetches objects places and its details from api, converts each of then into a dataframe
+    and returns them inside a tuple
+
+    :param number_of_places: number of objects to return from openapi (max 5000)
+    :type number_of_places: int
+    :param spark: spark session
+    :type spark: SparkSession
+    :return: places and places_details dataframes
+    :rtype: Tuple[DataFrame, DataFrame]
+    """
+
+    if number_of_places > 5000:
+        raise ValueError('Daily number of requests exceeded, max number allowed is 5000')
+
+    places = get_places_info(
+        bbox=[2.028471, 2.283903, 41.315758, 41.451768],
+        kinds='accomodations',
+        limit=number_of_places
+    )
+
+    places_df = places_to_df(places, spark)
+
+    places_ids = [place['xid'] for place in places]
+
+    places_details = get_places_details(places_ids)
+
+    details_df = places_details_to_df(places_details, spark)
+
+    return places_df, details_df
+
+
+def transform(places: DataFrame, places_details: DataFrame, spark: SparkSession) -> DataFrame:
+    """
+    Returns a dataframe with places filtering out skyscrapers kind and adding
+    details fetched for every single place id
+
+    :param places: places df
+    :type places: DataFrame
+    :param places_details: places details df
+    :type places_details: DataFrame
+    :param spark: spark session
+    :type spark: SparkSession
+    :return: a dataframe with all the transformations described above
+    :rtype: DataFrame
+    """
+
+    no_skyscraper_accommodations = (
+        places.filter(~(col('kinds').contains('skyscrapers')))
+    )
+    add_number_of_kinds = (
+        no_skyscraper_accommodations.withColumn('kinds_amount', size(split(col('kinds'), ',')))
+    )
+
+    return add_number_of_kinds.join(places_details, on='xid')
 
 
 def load(detailed_places: DataFrame, path: str) -> None:
@@ -211,8 +254,8 @@ if __name__ == '__main__':
 
     with new_spark_session('Open Trip Map') as s:
 
-        data = extract(50)
+        data = extract(50, s)
 
-        processed_data = transform(data, s)
+        processed_data = transform(data[0], data[1], s)
 
         load(processed_data, f'{os.getcwd()}/output/places_output.csv')
