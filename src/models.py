@@ -1,5 +1,6 @@
 from pyspark.sql.types import DoubleType, IntegerType, StringType, StructField, StructType, MapType
 
+# Schema returned by opentripapi bbox rest endpoint
 PlaceRaw = StructType([
     StructField('xid', StringType()),
     StructField('name', StringType()),
@@ -13,6 +14,7 @@ PlaceRaw = StructType([
     ))
 ])
 
+# Schema after flatten point field on PlaceRaw
 PlaceFlattened = StructType([
     StructField('xid', StringType()),
     StructField('name', StringType()),
@@ -25,7 +27,7 @@ PlaceFlattened = StructType([
     StructField('lat', DoubleType())
 ])
 
-
+# Schema returned by xid endpoint filtering the fields needed for the pipeline
 PlaceDetailsRaw = StructType([
     StructField('xid', StringType()),
     StructField('stars', IntegerType()),
@@ -37,6 +39,7 @@ PlaceDetailsRaw = StructType([
     StructField('wikipedia', StringType())
 ])
 
+# Resulting schema after flattening PlaceDetailsRaw address field
 PlaceDetails = StructType([
     StructField('xid', StringType()),
     StructField('stars', IntegerType()),
@@ -46,7 +49,7 @@ PlaceDetails = StructType([
     StructField('country_code', StringType()),
     StructField('country', StringType()),
     StructField('city', StringType()),
-    StructField('postcode', IntegerType()),
+    StructField('postcode', StringType()),
     StructField('county', StringType()),
     StructField('suburb', StringType()),
     StructField('house_number', IntegerType()),

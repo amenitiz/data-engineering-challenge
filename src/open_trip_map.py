@@ -1,14 +1,60 @@
+import logging
 import os
 import time
 from platform import platform
 from typing import Dict, List, Tuple
 
 import requests
+from requests.adapters import HTTPAdapter, Retry
 from pyspark.sql.dataframe import DataFrame
 from pyspark.sql.session import SparkSession
 from pyspark.sql.functions import col, size, split
 
 from src.models import PlaceRaw, PlaceDetailsRaw
+
+
+def perform_rest_call(method: str, params: Dict[str, str], url: str, timeout: int = 3) -> dict:
+    """
+    Performs a rest call.
+    Has a retry policy for 409 errors.
+    Exists the program if an exception occurs.
+
+    :param method: HTTP method
+    :type method: str
+    :param params: key value pairs passed in the query string
+    :type params: str
+    :param url:
+    :type url: str
+    :param timeout: number of seconds to wait for response before failing
+    :type timeout: int
+    :return: response in json format
+    :rtype: dict
+    """
+
+    try:
+        # 409 errors happen more often than expected even performing 5 request per second.
+        # we're implementing a retry on them, so we can delete the wait logic from the
+        # extract details function
+        session = requests.Session()
+        retries = Retry(
+            backoff_factor=0.4,
+            status_forcelist=[409, 500, 502, 503, 504],
+            total=3
+        )
+        session.mount('https://', HTTPAdapter(max_retries=retries))
+
+        response = session.request(
+            method=method,
+            params=params,
+            timeout=timeout,
+            url=url
+        )
+
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise SystemExit(e)
+
+    return response.json()
 
 
 def new_spark_session(app_name: str) -> SparkSession:
@@ -58,17 +104,7 @@ def get_places_info(bbox: List[float], kinds: str, limit: int) -> List[Dict[str,
         'lat_max': bbox[3]
     }
 
-    try:
-        response = requests.get(
-            params=query,
-            url=url
-        )
-        response.raise_for_status()
-
-        return response.json()
-    except requests.exceptions.HTTPError():
-        return []
-
+    return perform_rest_call('get', query, url)
 
 def get_place_details(xid: str) -> Dict[str, str]:
     """
@@ -85,16 +121,7 @@ def get_place_details(xid: str) -> Dict[str, str]:
         'apikey': '5ae2e3f221c38a28845f05b613ca228a2d016638e03f5f81315b3415'
     }
 
-    try:
-        response = requests.get(
-            params=query,
-            url=url
-        )
-        response.raise_for_status()
-        print(f'[INFO] - {time.time()}')
-        return response.json()
-    except requests.exceptions.HTTPError():
-        return {}
+    return perform_rest_call('get', query, url)
 
 
 def get_places_details(xids: List[str]) -> List[Dict[str, str]]:
@@ -109,17 +136,10 @@ def get_places_details(xids: List[str]) -> List[Dict[str, str]]:
     """
 
     places_details = []
-    requests_threshold = 5
-    requests_performed = 0
 
     for xid in xids:
         details = get_place_details(xid)
         places_details.append(details)
-        requests_performed += 1
-
-        if requests_performed == requests_threshold:
-            time.sleep(1)
-            requests_performed = 0
 
     return places_details
 
@@ -166,7 +186,7 @@ def places_details_to_df(places_details: List[Dict[str, str]], spark: SparkSessi
         df.withColumn('country_code', col('address').getField('country_code'))
         .withColumn('country', col('address').getField('country'))
         .withColumn('city', col('address').getField('city'))
-        .withColumn('postcode', col('address').getField('postcode').cast('integer'))
+        .withColumn('postcode', col('address').getField('postcode'))
         .withColumn('county', col('address').getField('county'))
         .withColumn('suburb', col('address').getField('suburb'))
         .withColumn('house_number', col('address').getField('house_number').cast('integer'))
@@ -212,7 +232,7 @@ def extract(number_of_places: int, spark: SparkSession) -> Tuple[DataFrame, Data
     return places_df, details_df
 
 
-def transform(places: DataFrame, places_details: DataFrame, spark: SparkSession) -> DataFrame:
+def transform(places: DataFrame, places_details: DataFrame) -> DataFrame:
     """
     Returns a dataframe with places filtering out skyscrapers kind and adding
     details fetched for every single place id
@@ -221,8 +241,6 @@ def transform(places: DataFrame, places_details: DataFrame, spark: SparkSession)
     :type places: DataFrame
     :param places_details: places details df
     :type places_details: DataFrame
-    :param spark: spark session
-    :type spark: SparkSession
     :return: a dataframe with all the transformations described above
     :rtype: DataFrame
     """
@@ -254,8 +272,8 @@ if __name__ == '__main__':
 
     with new_spark_session('Open Trip Map') as s:
 
-        data = extract(50, s)
+        data = extract(2500, s)
 
-        processed_data = transform(data[0], data[1], s)
+        processed_data = transform(data[0], data[1])
 
-        load(processed_data, f'{os.getcwd()}/output/places_output.csv')
+        load(processed_data, f'{os.environ.get("PROJECT_ROOT_PATH")}/output/places_output.csv')
