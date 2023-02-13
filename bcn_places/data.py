@@ -1,5 +1,4 @@
 import pandas as pd
-
 from global_ import dic
 
 
@@ -36,7 +35,6 @@ class Prepare:
         self.df = df
 
     def clean(self):
-
         # get lon + lat columns
         self.df[['lon', 'lat']] = self.df["point"].apply(lambda x: pd.Series(str(x).split(",")))
         df = self.df.drop('point', axis=1)
