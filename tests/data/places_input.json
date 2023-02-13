@@ -90,12 +90,39 @@
         "county": "BCN",
         "suburb": "el Raval",
         "country": "España",
-        "postcode": 8001,
+        "postcode": "08001",
         "pedestrian": "Carrer Sant Pau",
         "country_code": "es",
         "house_number": 9,
         "city_district": "Ciutat Vella"
       }
     ]
-  }
+  },
+  "results": [
+    {
+      "xid": "R10795366",
+      "name": "Hotel Espanya",
+      "rate": 7,
+      "osm": "relation/10795366",
+      "wikidata": "Q11682616",
+      "kinds": "architecture,historic_architecture,accomodations",
+      "lon": 2.173105478286743,
+      "lat": 41.37990188598633,
+      "kinds_amount": 3,
+      "stars": 4,
+      "url": "https://www.hotelespanya.com",
+      "image": "https://commons.wikimedia.org/wiki/File:Raval_-_Fonda_Espanya.JPG",
+      "wikipedia": "https://es.wikipedia.org/wiki/Hotel%20Espa%C3%B1a",
+      "city": "Barcelona",
+      "state": "CAT",
+      "county": "BCN",
+      "suburb": "el Raval",
+      "country": "España",
+      "postcode": "08001",
+      "pedestrian": "Carrer Sant Pau",
+      "country_code": "es",
+      "house_number": 9,
+      "city_district": "Ciutat Vella"
+    }
+  ]
 }

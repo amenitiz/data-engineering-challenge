@@ -4,7 +4,6 @@ from pyspark.sql.types import DoubleType, IntegerType, StringType, StructField, 
 PlaceRaw = StructType([
     StructField('xid', StringType()),
     StructField('name', StringType()),
-    StructField('highlighted_name', StringType()),
     StructField('kinds', StringType()),
     StructField('osm', StringType()),
     StructField('wikidata', StringType()),
@@ -18,7 +17,6 @@ PlaceRaw = StructType([
 PlaceFlattened = StructType([
     StructField('xid', StringType()),
     StructField('name', StringType()),
-    StructField('highlighted_name', StringType()),
     StructField('kinds', StringType()),
     StructField('osm', StringType()),
     StructField('wikidata', StringType()),
@@ -42,6 +40,32 @@ PlaceDetailsRaw = StructType([
 # Resulting schema after flattening PlaceDetailsRaw address field
 PlaceDetails = StructType([
     StructField('xid', StringType()),
+    StructField('stars', IntegerType()),
+    StructField('url', StringType()),
+    StructField('image', StringType()),
+    StructField('wikipedia', StringType()),
+    StructField('country_code', StringType()),
+    StructField('country', StringType()),
+    StructField('city', StringType()),
+    StructField('postcode', StringType()),
+    StructField('county', StringType()),
+    StructField('suburb', StringType()),
+    StructField('house_number', IntegerType()),
+    StructField('pedestrian', StringType()),
+    StructField('state', StringType()),
+    StructField('city_district', StringType())
+])
+
+PlacesWithDetailsResult = StructType([
+    StructField('xid', StringType()),
+    StructField('name', StringType()),
+    StructField('kinds', StringType()),
+    StructField('osm', StringType()),
+    StructField('wikidata', StringType()),
+    StructField('dist', DoubleType()),
+    StructField('lon', DoubleType()),
+    StructField('lat', DoubleType()),
+    StructField('kinds_amount', IntegerType()),
     StructField('stars', IntegerType()),
     StructField('url', StringType()),
     StructField('image', StringType()),

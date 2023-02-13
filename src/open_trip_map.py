@@ -106,6 +106,7 @@ def get_places_info(bbox: List[float], kinds: str, limit: int) -> List[Dict[str,
 
     return perform_rest_call('get', query, url)
 
+
 def get_place_details(xid: str) -> Dict[str, str]:
     """
     Perform a rest call to opentripmap and retrieve full details for a place
@@ -272,7 +273,7 @@ if __name__ == '__main__':
 
     with new_spark_session('Open Trip Map') as s:
 
-        data = extract(2500, s)
+        data = extract(50, s)
 
         processed_data = transform(data[0], data[1])
 
