@@ -39,4 +39,3 @@ class Converter:
         time.sleep(5)
         driver.save_screenshot("output.png")
         driver.quit()
-        print("png saved")

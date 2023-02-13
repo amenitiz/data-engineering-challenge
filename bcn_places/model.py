@@ -62,5 +62,3 @@ class Model:
         df = df.set_index(['xid'])
 
         df.to_csv('places_output.csv')
-
-        print("csv saved")
