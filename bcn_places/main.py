@@ -1,8 +1,8 @@
-import model
-import map
+from model import Model
+from map import Converter
 
-model = model.Model()
-output_places = map.Converter()
+model = Model()
+output_places = Converter()
 
 
 def main():
