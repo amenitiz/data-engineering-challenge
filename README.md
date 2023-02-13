@@ -38,6 +38,13 @@ that should be always present in every project :eyes:
 # Requirements
 There we go!
 
+## To make this project work :)
+
+Set the following two env variables:
+
+* OPENTRIP_API_TOKEN: contains the token to authenticate with the apis
+* PROJECT_ROOT_PATH: full path to the root of this project on your local filesystem
+
 ## Functional requirements
 **FRQ-01**: 
 

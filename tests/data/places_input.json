@@ -1,0 +1,128 @@
+{
+  "places": {
+    "raw": [
+      {
+        "xid": "R10795366",
+        "name": "Hotel Espanya",
+        "rate": 7,
+        "osm": "relation/10795366",
+        "wikidata": "Q11682616",
+        "kinds": "architecture,historic_architecture,accomodations",
+        "point": {
+          "lon": 2.173105478286743,
+          "lat": 41.37990188598633
+        }
+      }
+    ],
+    "processed": [
+      {
+        "xid": "R10795366",
+        "name": "Hotel Espanya",
+        "rate": 7,
+        "osm": "relation/10795366",
+        "wikidata": "Q11682616",
+        "kinds": "architecture,historic_architecture,accomodations",
+        "lon": 2.173105478286743,
+        "lat": 41.37990188598633
+      }
+    ]
+  },
+  "details": {
+    "raw": [
+      {
+        "xid": "R10795366",
+        "name": "Hotel Espanya",
+        "address": {
+          "city": "Barcelona",
+          "state": "CAT",
+           "county": "BCN",
+          "suburb": "el Raval",
+          "country": "España",
+          "postcode": "08001",
+          "pedestrian": "Carrer Sant Pau",
+          "country_code": "es",
+          "house_number": "9",
+          "city_district": "Ciutat Vella"
+        },
+        "rate": "3h",
+        "osm": "relation/10795366",
+        "bbox": {
+          "lon_min": 2.172757,
+          "lon_max": 2.173256,
+          "lat_min": 41.379721,
+          "lat_max": 41.38007
+        },
+        "wikidata": "Q11682616",
+        "kinds": "architecture,historic_architecture,accomodations",
+        "url": "https://www.hotelespanya.com",
+        "sources": {
+          "geometry": "osm",
+          "attributes": ["osm", "wikidata"]
+        },
+        "stars": 4,
+        "otm": "https://opentripmap.com/en/card/R10795366",
+        "wikipedia": "https://es.wikipedia.org/wiki/Hotel%20Espa%C3%B1a",
+        "image": "https://commons.wikimedia.org/wiki/File:Raval_-_Fonda_Espanya.JPG",
+        "preview": {
+          "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Raval_-_Fonda_Espanya.JPG/266px-Raval_-_Fonda_Espanya.JPG",
+          "height": 400,
+          "width": 266
+        },
+        "wikipedia_extracts": {
+          "title": "es:Hotel España",
+          "text": "test"
+        },
+        "point": {
+          "lon": 2.173105478286743,
+          "lat": 41.37990188598633
+        }
+      }
+    ],
+    "processed": [
+      {
+        "xid": "R10795366",
+        "stars": 4,
+        "url": "https://www.hotelespanya.com",
+        "image": "https://commons.wikimedia.org/wiki/File:Raval_-_Fonda_Espanya.JPG",
+        "wikipedia": "https://es.wikipedia.org/wiki/Hotel%20Espa%C3%B1a",
+        "city": "Barcelona",
+        "state": "CAT",
+        "county": "BCN",
+        "suburb": "el Raval",
+        "country": "España",
+        "postcode": "08001",
+        "pedestrian": "Carrer Sant Pau",
+        "country_code": "es",
+        "house_number": 9,
+        "city_district": "Ciutat Vella"
+      }
+    ]
+  },
+  "results": [
+    {
+      "xid": "R10795366",
+      "name": "Hotel Espanya",
+      "rate": 7,
+      "osm": "relation/10795366",
+      "wikidata": "Q11682616",
+      "kinds": "architecture,historic_architecture,accomodations",
+      "lon": 2.173105478286743,
+      "lat": 41.37990188598633,
+      "kinds_amount": 3,
+      "stars": 4,
+      "url": "https://www.hotelespanya.com",
+      "image": "https://commons.wikimedia.org/wiki/File:Raval_-_Fonda_Espanya.JPG",
+      "wikipedia": "https://es.wikipedia.org/wiki/Hotel%20Espa%C3%B1a",
+      "city": "Barcelona",
+      "state": "CAT",
+      "county": "BCN",
+      "suburb": "el Raval",
+      "country": "España",
+      "postcode": "08001",
+      "pedestrian": "Carrer Sant Pau",
+      "country_code": "es",
+      "house_number": 9,
+      "city_district": "Ciutat Vella"
+    }
+  ]
+}
