@@ -22,7 +22,7 @@ class Converter:
         lon = df['lon']
 
         for x, y in zip(lat, lon):
-            folium.Marker(([x, y]), popup="test").add_to(es_map)
+            folium.Marker(([x, y])).add_to(es_map)
 
         output = 'output.html'
         es_map.save(output)
