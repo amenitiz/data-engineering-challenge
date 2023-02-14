@@ -4,7 +4,7 @@ from model import Model
 def test_object_len():
     test_model = Model()
     objects = test_model.get_objects()
-    assert len(objects) == 500
+    assert len(objects) == 500  # TODO to 2500
 
 
 def test_filter():
