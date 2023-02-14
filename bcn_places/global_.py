@@ -20,3 +20,6 @@ dic = {'xid': [],
        'address': []}
 
 schema = ['xid', 'name', 'address', 'kinds', 'kinds_amount', 'stars', 'lon', 'lat', 'url', 'wikipedia', 'image']
+
+# coordinates for barcelona folium map
+coordinates = [41.3874, 2.1686]

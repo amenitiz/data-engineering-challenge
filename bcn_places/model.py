@@ -13,10 +13,10 @@ class Model:
     def get_objects(self):
         request = f"{self.url}&apikey={self.key}"
         objects = pd.read_json(request)
+
         return objects
 
     def get_df_properties(self):
-
         data = Prepare(self.get_objects())
         return data.clean()
 
@@ -32,12 +32,11 @@ class Model:
                       f"={api_key}"
 
             df = pd.read_json(request)
+            req = requests.get(request)
+            json = req.json()
 
             data = Prepare(df)
             address = data.address_to_list()
-
-            req = requests.get(request)
-            json = req.json()
 
             for key in keys:
                 if key in json:

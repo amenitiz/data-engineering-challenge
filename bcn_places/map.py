@@ -3,23 +3,20 @@ import time
 import folium
 import pandas as pd
 from selenium import webdriver
+from global_ import coordinates
 
 
 class Converter:
 
     def __init__(self):
-        self.csv = 'places_output.csv'
+        self.df = pd.read_csv('places_output.csv')
 
     def create_map(self):
 
-        coordinates = [41.3874, 2.1686]
-
         es_map = folium.Map(location=coordinates, zoom_start=13)
 
-        df = pd.read_csv(self.csv)
-
-        lat = df['lat']
-        lon = df['lon']
+        lat = self.df['lat']
+        lon = self.df['lon']
 
         for x, y in zip(lat, lon):
             folium.Marker(([x, y])).add_to(es_map)
