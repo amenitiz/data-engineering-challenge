@@ -10,11 +10,14 @@ class Model:
                    f"=accomodations&format=json&"
         self.key = api_key
 
+    def get_objects(self):
+        request = f"{self.url}&apikey={self.key}"
+        objects = pd.read_json(request)
+        return objects
+
     def get_df_properties(self):
-        df = pd.read_json(f"{self.url}&apikey={self.key}")
 
-        data = Prepare(df)
-
+        data = Prepare(self.get_objects())
         return data.clean()
 
     def get_xid(self):
