@@ -1,12 +1,13 @@
 import requests
 import pandas as pd
-from global_ import url, api_key, keys, dic, schema, url_part_detailed
+from global_ import api_key, keys, dic, schema, base_url, lon_max, lon_min, lat_max, lat_min
 from data import Prepare, get_schema
 
 
 class Model:
     def __init__(self):
-        self.url = url
+        self.url = f"{base_url}bbox?lon_min={lon_min}&lon_max={lon_max}&lat_min={lat_min}&lat_max={lat_max}&kinds" \
+                   f"=accomodations&format=json&"
         self.key = api_key
 
     def get_df_properties(self):
@@ -24,7 +25,7 @@ class Model:
     def read_json_detailed(self):
 
         for object_id in self.get_xid():
-            request = f"{url_part_detailed}{object_id}?apikey" \
+            request = f"{base_url}xid/{object_id}?apikey" \
                       f"={api_key}"
 
             df = pd.read_json(request)
