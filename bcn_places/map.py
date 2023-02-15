@@ -12,9 +12,7 @@ class Converter:
         self.df = pd.read_csv('places_output.csv')
 
     def create_map(self):
-
         es_map = folium.Map(location=coordinates, zoom_start=13)
-
         lat = self.df['lat']
         lon = self.df['lon']
 
@@ -24,12 +22,11 @@ class Converter:
         return 'output.html'
 
     def save_png(self):
-
         url = 'file://{0}/{1}'.format(os.getcwd(), self.create_map())
-
         driver = webdriver.Chrome()
         driver.get(url)
-
         time.sleep(5)
         driver.save_screenshot("output.png")
         driver.quit()
+
+

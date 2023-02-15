@@ -4,7 +4,7 @@ from collections import Counter
 
 def test_len_object_json():
     length = 0
-    for request in Model().get_objects():
+    for request in Model().request_objects():
         length += len(request)
     assert length == 2500
 
@@ -18,4 +18,4 @@ def test_filter():
 
 
 def check_for_duplicates():
-    assert print(len(Counter(Model().get_objects())) - len(set(Model().get_objects()))) == 0
+    assert print(len(Counter(Model().request_objects())) - len(set(Model().request_objects()))) == 0
