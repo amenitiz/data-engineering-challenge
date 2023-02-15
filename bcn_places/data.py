@@ -1,5 +1,5 @@
 import pandas as pd
-from global_ import dic
+from global_ import dict_detailed
 
 
 def get_address(address_fields):
@@ -10,23 +10,25 @@ def get_address(address_fields):
 
 
 def get_schema(json):
-    for key in json:
+    for key in list(json.keys()):
         if key == 'xid':
-            dic['xid'].append(json.get('xid'))
+            dict_detailed['xid'].append(json.get('xid'))
         elif key == 'name':
-            dic['name'].append(json.get('name'))
-        elif key == 'kinds':
-            dic['kinds'].append(json.get('kinds'))
+            dict_detailed['name'].append(json.get('name'))
         elif key == 'url':
-            dic['url'].append(json.get('url'))
+            dict_detailed['url'].append(json.get('url'))
         elif key == 'stars':
-            dic['stars'].append(json.get('stars'))
+            dict_detailed['stars'].append(json.get('stars'))
         elif key == 'wikipedia':
-            dic['wikipedia'].append(json.get('wikipedia'))
+            dict_detailed['wikipedia'].append(json.get('wikipedia'))
         elif key == 'image':
-            dic['image'].append(json.get('image'))
+            dict_detailed['image'].append(json.get('image'))
         elif key == 'address':
-            dic['address'].append(json.get('address'))
+            dict_detailed['address'].append(json.get('address'))
+        elif key == 'point':
+            dict_detailed['point'].append(json.get('point'))
+        elif key == 'kinds':
+            dict_detailed['kinds'].append(json.get('kinds'))
 
 
 class Prepare:
@@ -42,12 +44,8 @@ class Prepare:
         df['lat'] = df['lat'].str[8:]
         df['lat'] = df['lat'].str[:-1]
 
-        df = df[df['kinds'].str.contains('skyscrapers')]
-
         df['kinds'] = df['kinds'].str.split(',')
         df['kinds_amount'] = df['kinds'].apply(lambda x: len(x))
-
-        df = df[['xid', 'kinds_amount', 'lon', 'lat']]
 
         return df
 

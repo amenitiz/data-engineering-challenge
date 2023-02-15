@@ -21,10 +21,7 @@ class Converter:
         for x, y in zip(lat, lon):
             folium.Marker(([x, y])).add_to(es_map)
 
-        output = 'output.html'
-        es_map.save(output)
-
-        return output
+        return 'output.html'
 
     def save_png(self):
 

@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-from global_ import api_key, keys, dic, schema, base_url, lon_max, lon_min, lat_max, lat_min
+from global_ import api_key, base_url, lon_max, lon_min, lat_max, lat_min, page_length, dict_detailed
 from data import Prepare, get_schema
 
 
@@ -11,57 +11,52 @@ class Model:
         self.key = api_key
 
     def get_objects(self):
-        request = f"{self.url}&apikey={self.key}"
-        objects = pd.read_json(request)
 
-        return objects
+        request = [requests.get(
+            f"{self.url}&apikey={api_key}&limit={page_length}&offset={page_length * i}").json()
+                   for i in range(10)]
 
-    def get_df_properties(self):
-        data = Prepare(self.get_objects())
-        return data.clean()
+        return request
 
-    def get_xid(self):
-        df = self.get_df_properties()
-        xid = df["xid"].values.tolist()
-        return xid
+    def get_object_xid(self):
+
+        xid_dict = {'xid': []}
+        xid_list = []
+
+        for request in self.get_objects():
+            for key in request:
+                if 'skyscraper' in key.get('kinds'):
+                    xid_dict['xid'].append(key.get('xid'))
+
+        for value in xid_dict.values():
+            for element in value:
+                xid_list.append(element)
+
+        return xid_list
 
     def read_json_detailed(self):
 
-        for object_id in self.get_xid():
-            request = f"{base_url}xid/{object_id}?apikey" \
+        for xid in self.get_object_xid():
+            request = f"{base_url}xid/{xid}?apikey" \
                       f"={api_key}"
 
-            df = pd.read_json(request)
-            req = requests.get(request)
-            json = req.json()
+            json = requests.get(request).json()
 
-            data = Prepare(df)
-            address = data.address_to_list()
-
-            for key in keys:
-                if key in json:
-                    del json[f"{key}"]
-
+            address = Prepare(pd.read_json(request)).address_to_list()
+            del json['address']
             json['address'] = address
 
-            for dic_key in dic.keys():
+            for dic_key in dict_detailed.keys():
                 if dic_key not in json.keys():
                     json[dic_key] = 'null'
 
             get_schema(json)
 
-        return dic
-
-    def get_df_detailed(self):
-        df = pd.DataFrame.from_dict(self.read_json_detailed())
-        return df
+        return dict_detailed
 
     def create_csv(self):
 
-        # merge properties + detailed on key xid
-        df = self.get_df_properties().merge(self.get_df_detailed(), on='xid')
-
-        df = df[schema]
-        df = df.set_index(['xid'])
+        df = pd.DataFrame.from_dict(self.read_json_detailed())
+        df = Prepare(df).clean().set_index(['xid'])
 
         df.to_csv('places_output.csv')
