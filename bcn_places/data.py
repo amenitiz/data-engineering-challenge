@@ -46,6 +46,7 @@ class Prepare:
 
         df['kinds'] = df['kinds'].str.split(',')
         df['kinds_amount'] = df['kinds'].apply(lambda x: len(x))
+        df = df.drop(['kinds'], axis=1)
 
         return df
 
