@@ -10,7 +10,7 @@ def get_address(address_fields):
 
 
 def get_schema(json):
-    for key in list(json.keys()):
+    for key in list(json):
         if key == 'xid':
             dict_detailed['xid'].append(json.get('xid'))
         elif key == 'name':

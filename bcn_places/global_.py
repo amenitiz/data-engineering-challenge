@@ -8,7 +8,6 @@ api_key = '5ae2e3f221c38a28845f05b656934aef7d36d2c813d4ee1bc9d86b1d'
 
 page_length = 250
 
-# dic schema for detailed properties
 dict_detailed = {'xid': [],
                  'name': [],
                  'url': [],
