@@ -55,3 +55,5 @@ class Prepare:
         address = get_address([x for x in address_list if str(x) != 'nan'])
 
         return address
+
+

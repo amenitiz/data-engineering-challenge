@@ -60,3 +60,6 @@ class Model:
         df = Prepare(df).clean().set_index(['xid'])
 
         df.to_csv('places_output.csv')
+
+
+

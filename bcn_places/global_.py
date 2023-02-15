@@ -20,3 +20,6 @@ dict_detailed = {'xid': [],
 
 # coordinates for barcelona folium map
 coordinates = [41.3874, 2.1686]
+
+
+
