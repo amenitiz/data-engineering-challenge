@@ -10,10 +10,10 @@ class OpenTripCrawler:
 
         self.create_spark_sessions()
 
-        self.get_accomodations_by_bbox()
+        self.accomodations_df = self.get_accomodations_by_bbox()
     
     def create_spark_sessions(self):
-        self.spark_session = SparkSession.builder.appName("").getOrCreate()
+        self.spark_session = SparkSession.builder.appName("OpenTrip Map API Crawler").getOrCreate()
 
     def get_accomodations_by_bbox(self):
         
@@ -36,10 +36,13 @@ class OpenTripCrawler:
         df = self.spark_session.createDataFrame(data=response.json(), \
                                                 schema = bbox_struct)
 
+        if self.config["debug"]:
+            print("DataFrame with 2500 accomodation's objects")
+            df.show()
+
         df = self.flat_bbox_df(df)
 
-        if self.config["debug"]:
-            df.show()
+        return df
     
     def flat_bbox_df(self, df):
 
@@ -52,8 +55,22 @@ class OpenTripCrawler:
                                 col("xid"))
 
         if self.config["debug"]:
+            print("Flattened DataFrame")
             df.show()
 
         return df
+
+    def filter_by_col_keywords(self, df, col, keyword):
+        
+        df = df.filter(df[col].contains(keyword))
+        
+        if self.config["debug"]:
+            print(f"Filtered column {col} by keyword {keyword}")
+            df.show()
+
+        return df
+    
+    def get_accomodations_df(self):
+        return self.accomodations_df
 
     
