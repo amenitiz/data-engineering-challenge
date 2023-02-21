@@ -15,3 +15,5 @@ def load_json(fname):
         out = json.load(f)
     return out
 
+def save_csv(df, filename, format="csv"):
+    df.write.format(format).save(filename)

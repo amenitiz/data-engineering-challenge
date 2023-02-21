@@ -17,7 +17,9 @@ class OpenTripCrawler:
 
         accomodations_df = self.count_column_per_place(accomodations_df, "kinds", "name")
 
-        self.accomodations_df = self.get_extra_accomodation_fields(accomodations_df)
+        extra_df = self.get_extra_accomodation_fields(accomodations_df)
+
+        self.final_df = self.merge_dfs(accomodations_df, extra_df, "xid")
     
     def create_spark_sessions(self):
         self.spark_session = SparkSession.builder.appName("OpenTrip Map API Crawler").getOrCreate()
@@ -112,11 +114,37 @@ class OpenTripCrawler:
                             response.get('wikipedia')
                     ))
 
-        return  self.spark_session.createDataFrame(responses, \
-                                            schema = extra_fields_struct)
+        return self.flat_extra_fields_df(self.spark_session.createDataFrame(responses, \
+                                            schema = extra_fields_struct))
     
+    def flat_extra_fields_df(self, df):
+        
+        df = df.select(col("xid"), col("stars"), 
+                           col("address.city").alias("city"),
+                           col("address.house").alias("house"),
+                           col("address.state").alias("state"),
+                           col("address.county").alias("county"),
+                          col("address.suburb").alias("suburb"),
+                          col("address.country").alias("country"),
+                          col("address.postcode").alias("postcode"),
+                          col("address.pedestrian").alias("pedestrian"),
+                          col("address.country_code").alias("country_code"),
+                          col("address.house_number").alias("house_number"),
+                          col("address.city_district").alias("city_district"),
+                          col("address.neighbourhood").alias("neighbourhood"),
+                          col("url"),
+                          col("image"),
+                          col("wikipedia"))
 
+        if self.config["debug"]:
+            df.show()
+
+        return df
+    
+    def merge_dfs(self, df1, df2, column):
+        return df1.join(df2, df1[column] ==  df2[column],"inner")
+    
     def get_accomodations_df(self):
-        return self.accomodations_df
+        return self.final_df
 
     
