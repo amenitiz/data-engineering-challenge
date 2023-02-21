@@ -2,7 +2,7 @@
 import requests
 from pyspark.sql import SparkSession
 from schemas import bbox_struct
-from pyspark.sql.functions import col
+from pyspark.sql.functions import col, size, split
 
 class OpenTripCrawler:
     def __init__(self, config):
@@ -10,7 +10,11 @@ class OpenTripCrawler:
 
         self.create_spark_sessions()
 
-        self.accomodations_df = self.get_accomodations_by_bbox()
+        accomodations_df = self.get_accomodations_by_bbox()
+
+        accomodations_df = self.filter_by_col_keywords(accomodations_df, "kinds", "skyscrapers")
+
+        self.accomodations_df = self.count_column_per_place(accomodations_df, "kinds", "name")
     
     def create_spark_sessions(self):
         self.spark_session = SparkSession.builder.appName("OpenTrip Map API Crawler").getOrCreate()
@@ -70,6 +74,20 @@ class OpenTripCrawler:
 
         return df
     
+    def count_column_per_place(self, df, col, place_col):
+
+        df = df.withColumn('kinds_amount', size(split(df[col], ',')))
+
+        #df = df.groupBy(place_col).sum("kind_amounts")
+
+        if self.config["debug"]:
+
+            df.filter(df.name == 'Hotel Ginebra').show()
+
+            df.show()
+
+        return df
+
     def get_accomodations_df(self):
         return self.accomodations_df
 
