@@ -1,8 +1,9 @@
 
 import requests
 from pyspark.sql import SparkSession
-from schemas import bbox_struct
+from schemas import bbox_struct, extra_fields_struct
 from pyspark.sql.functions import col, size, split
+from pyspark.sql.types import *
 
 class OpenTripCrawler:
     def __init__(self, config):
@@ -14,7 +15,9 @@ class OpenTripCrawler:
 
         accomodations_df = self.filter_by_col_keywords(accomodations_df, "kinds", "skyscrapers")
 
-        self.accomodations_df = self.count_column_per_place(accomodations_df, "kinds", "name")
+        accomodations_df = self.count_column_per_place(accomodations_df, "kinds", "name")
+
+        self.accomodations_df = self.get_extra_accomodation_fields(accomodations_df)
     
     def create_spark_sessions(self):
         self.spark_session = SparkSession.builder.appName("OpenTrip Map API Crawler").getOrCreate()
@@ -87,6 +90,31 @@ class OpenTripCrawler:
             df.show()
 
         return df
+
+    def get_extra_accomodation_fields(self, df):
+
+
+        xids_list = df.select('xid').rdd.flatMap(lambda x: x).collect()
+
+        query = {"apikey": self.config["apikey"]}
+
+        list_urls = [f'{self.config["xid_url"]}{xid}' for xid in xids_list]
+        
+        responses = []
+        for url in list_urls:
+            response = requests.get(url, params=query).json()
+
+            responses.append(Row(response.get('xid'), \
+                            response.get('stars'),
+                            response.get('address'),
+                            response.get('url'),
+                            response.get('image'),
+                            response.get('wikipedia')
+                    ))
+
+        return  self.spark_session.createDataFrame(responses, \
+                                            schema = extra_fields_struct)
+    
 
     def get_accomodations_df(self):
         return self.accomodations_df

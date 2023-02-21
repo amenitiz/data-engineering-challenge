@@ -11,3 +11,14 @@ bbox_struct = StructType([
         StructField('rate', StringType()),
         StructField('wikidata', StringType())
     ])
+
+extra_fields_struct = StructType([
+        StructField('xid', StringType()),
+        StructField('stars', StringType()),
+        StructField('address', MapType(
+            StringType(), StringType(), False
+        )),
+        StructField('url', StringType()),
+        StructField('image', StringType()),
+        StructField('wikipedia', StringType())
+    ])
