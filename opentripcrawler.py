@@ -2,6 +2,7 @@
 import requests
 from pyspark.sql import SparkSession
 from schemas import bbox_struct
+from pyspark.sql.functions import col
 
 class OpenTripCrawler:
     def __init__(self, config):
@@ -35,8 +36,24 @@ class OpenTripCrawler:
         df = self.spark_session.createDataFrame(data=response.json(), \
                                                 schema = bbox_struct)
 
+        df = self.flat_bbox_df(df)
+
         if self.config["debug"]:
             df.show()
     
-    
+    def flat_bbox_df(self, df):
+
+        df = df.select(col("kinds"), col("name"), 
+                                col("osm"),
+                                col("point.lon").alias("lon"),
+                                col("point.lat").alias("lat"),
+                                col("rate"),
+                                col("wikidata"),
+                                col("xid"))
+
+        if self.config["debug"]:
+            df.show()
+
+        return df
+
     
