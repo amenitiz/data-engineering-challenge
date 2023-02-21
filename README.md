@@ -1,114 +1,73 @@
 # Amenitiz © Data Engineer challenge 1
+- Name: Aleix Paradell
+- Position: Data Engineer
+- Date: February 2023
+- [Challenge Instructions](challenge_instructions.md)
 
 
-# Instructions
-Hello :wave: dear candidate. We are glad you get this far in your journey of becoming part of Amenitiz as a Data Engineer.
+## Initial Set Up
+1. Clone this repo `git clone git@github.com:paradell/taxdown-coding-challenge.git`
+2. Install the latest **Python 3.8.X** version. To easily switch between Python versions, it is recommended to use [pyenv](https://github.com/pyenv/pyenv) or [virtualenv](https://virtualenv.pypa.io/en/latest/).
+    - `pyenv install 3.8.X` (use the appropriate version)
+    - `pyenv local 3.8.X`
+    - Check Python version with `python --version`.
+3. Install developer libraries
+```bash
+python -m pip install --upgrade pip
+python -m pip install -r dev-requirements.txt
+```
+4. Install project libraries
+```bash
+python -m pip install -r requirements.txt
+```
+5. Install pre-commit configurations
+```bash
+pre-commit install
+```
 
-You should have forked this repository from the Amenitiz organization in GitHub
+## Extract data from Open Trip Map
+1. Have an Open Trip Map account.
+2. Store the Open Trip Map API KEY as a Environment Variable
+```bash
+export OPENTRIPMAP_APIKEY={your_api_key}`
+```
+3. Run the data extraction code.
+```bash
+python opentripmap_data/data_extraction.py
+```
 
-:exclamation: In order to start this challenge you will need some actions previously executed:
-- [ ] Create an account (or two) at [OpenTripMap](https://opentripmap.io/product). Do not worry, it is free, but take 
-care of their API rate limits.
-- [ ] Had your favourite IDE prepared to code in [Python](https://www.python.org/downloads/release/python-3716/) 
-(preferred version **3.7** or higher). We encourage [PyCharm](https://www.jetbrains.com/pycharm/) usage
-- [ ] Had set up a Virtual Environment to run the project and its tests ([venv](https://docs.python.org/3/library/venv.html) 
-is preferred)
-- [ ] For dataframe based operations, please either use [Pandas](https://pypi.org/project/pandas/) or 
-[PySpark](https://pypi.org/project/pyspark/) libraries
+## Run unit tests
+1. From the location `{repo_directory}/opentripmap_data`
+2. Execute `pytest-v`
+3. Check all unit tests have status `PASSED`
+```shell
+========= test session starts =================================
 
-:alarm_clock: Depending on your level of experience the challenge might take more or less time. A Senior profile could finish it in
-a couple of hours... anyway, just let us know how much time you need to deliver it
+rootdir: /Users/aleixparadell/assessments/ameinitz/ameinitz-data-engineering-challenge/opentripmap_data
+collected 8 items
 
-:envelope: The delivery method will consist in opening a Pull Request from your forked repository to the main repository in GitHub
+tests/test_data_extraction.py::test_parse_opentripmap_entry_fully_populated PASSED                                                                                                                                               [ 12%]
+tests/test_data_extraction.py::test_parse_opentripmap_entry_no_wikidata PASSED                                                                                                                                                   [ 25%]
+tests/test_data_extraction.py::test_parse_opentripmap_entry_no_osm PASSED                                                                                                                                                        [ 37%]
+tests/test_data_extraction.py::test_parse_opentripmap_entry_no_osm_nor_wikidata PASSED                                                                                                                                           [ 50%]
+tests/test_data_transformation.py::test_add_kinds_amount_column PASSED                                                                                                                                                           [ 62%]
+tests/test_data_transformation.py::test_add_kinds_amount_column_empty_string PASSED                                                                                                                                              [ 75%]
+tests/test_data_transformation.py::test_filter_by_skyscrappers_accommodations PASSED                                                                                                                                             [ 87%]
+tests/test_data_transformation.py::test_filter_by_skyscrappers_accommodations_no_skyscrapper PASSED                                                                                                                              [100%]
 
-# Suggestions
+========= 8 passed in 0.55s =================================
+```
 
-1. Not all the functional requirements have to be implemented in the order they have been written. There are dozens of ways
-of implementing solutions to the challenge, there is no single and unique "right" implementation. 
-2. If we were you, we will probably stick to the "preferred" options offered
-3. The words must/should and their negative forms are being applied in this whole document as the [RFC-2119](https://www.ietf.org/rfc/rfc2119.txt) standard states
-4. The Non-functional requirements expressed are minimal, we hope to appreciate the inclusion of obvious other ones 
-that should be always present in every project :eyes:
-5. From all the Software Engineering principles that exist, the most loved one in Amenitiz is the
-[KISS](https://en.wikipedia.org/wiki/KISS_principle) principle... if you know what we mean...
-6. If you have doubts please, do not hesitate to contact us asking anything you need to complete the challenge comfortably
-7. How you use git (commit messages, branches, etc.) is something we are going to check, try to be coherent and tidy
-8. Just in case, we let you know you can have several Python versions available within your Operating System thanks to tools like [pyenv](https://github.com/pyenv/pyenv)
-
-# Requirements
-There we go!
-
-## Functional requirements
-**FRQ-01**: 
-
-Extract 2500 objects from *OpenTripMap*
-  - Language must be: english
-  - Kinds should be: `accomodations` (yes, the typo is theirs) 
-  - Format must be: `json` 
-  - Minimum longitude: `2.028471` 
-  - Maximum longitude: `2.283903` 
-  - Minimum latitude: `41.315758` 
-  - Maximum latitude: `41.451768`
-  
-**FRQ-02**: 
-  
-Transform the JSON array obtained from *OpenTripMap* to a Pandas or PySpark dataframe.
-
-Make sure the dataframe does not contain complex data types (array, struct or map)
-
-**FRQ-03**:
-
-Filter those records that include the word "*skyscrapers*" within its kinds
-
-**FRQ-04**:
-
-Add a new dimension `kinds_amount`, which is the count of kinds of a particular place
-
-**FRQ-05**:
-
-For every record in the dataframe add the following dimensions extracted from OpenTripMap details API information 
-
-- stars
-- address (all fields)
-- url
-- image
-- wikipedia (just the url)
-
-:warning: keep in mind this dimensions must not be complex
-
-**FRQ-06**:
-
-Once the dataframe has been properly transformed according to the previous functional requirements,
-save it into a cvs file with headers (i.e. *places_output.csv*)
-
-**FRQ-07**:
-
-As a bonus, which means this one is a nice to have and not mandatory, plot into a .jpg file the area where we have 
-searched this places as well as their positions (as leaflets or red dots, for example) 
-
-
-## Non-functional requirements
-
-**NRQ-01**:
-
-Codebase must follow a concrete structure. Either define one on your own (we would like to know the decisions made 
-regarding this choice) or use a preexisting/standard template 
-
-**NRQ-02**:
-
-Project must include a requirements.txt (filled with **all** the required dependencies) file and a .gitignore file 
-(to prevent committing files that are not sources) 
-If you have doubts regarding how to make a proper .gitignore file, search for .gitignore templates around the Internet
-
-**NRQ-03**:
-
-Code style must follow [PEP 8](https://peps.python.org/pep-0008/) convention
-
-**NRQ-04**:
-
-Provide Unit Tests ([unittest](https://docs.python.org/3/library/unittest.html) preferred). We highly encourage these 
-following the [AAA](https://jamescooke.info/arrange-act-assert-pattern-for-python-developers.html) approach
-
----
-
-That's all, we wish you the best! :v:
+## Run the code
+1. From the location `{repo_directory}/opentripmap_data`
+2. Execute `python data_pipeline.py`
+3. Check all the steps are executed correctly
+```shell
+Something went wrong, expected 2500 entries but got 500.
+Data extraction ended
+Data Transformation started
+Data Transformation ended
+Storing skyscrapper data in output_files/skyscrappers_bcn_2023-02-21.csv
+File output_files/skyscrappers_bcn_2023-02-21.csv created successfully
+```
+4. Check output files in `opentripmap_data/output_files` directory are correctly created
