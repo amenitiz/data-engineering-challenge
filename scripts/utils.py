@@ -15,5 +15,5 @@ def load_json(fname):
         out = json.load(f)
     return out
 
-def save_csv(df, filename, format="csv"):
-    df.write.format(format).save(filename)
+def save_csv(df, filename, format="csv", mode="overwrite", header = True):
+    df.repartition(1).write.option("header",header).format(format).mode(mode).save(filename)

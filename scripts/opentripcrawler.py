@@ -4,6 +4,8 @@ from pyspark.sql import SparkSession
 from schemas import bbox_struct, extra_fields_struct
 from pyspark.sql.functions import col, size, split
 from pyspark.sql.types import *
+from utils import load_json, check_path, save_csv
+
 
 class OpenTripCrawler:
     def __init__(self, config):
@@ -11,13 +13,14 @@ class OpenTripCrawler:
 
         self.create_spark_sessions()
 
-        accomodations_df = self.get_accomodations_by_bbox()
+    def run(self):
+        accomodations_df = self.flat_bbox_df(self.get_accomodations_by_bbox())
 
         accomodations_df = self.filter_by_col_keywords(accomodations_df, "kinds", "skyscrapers")
 
         accomodations_df = self.count_column_per_place(accomodations_df, "kinds", "name")
 
-        extra_df = self.get_extra_accomodation_fields(accomodations_df)
+        extra_df = self.flat_extra_fields_df(self.get_extra_accomodation_fields(accomodations_df))
 
         self.final_df = self.merge_dfs(accomodations_df, extra_df, "xid")
     
@@ -37,36 +40,39 @@ class OpenTripCrawler:
                 'lat_max': self.config["bbox"][3]
             }
 
-        response = requests.get(
-            params=query,
-            url=self.config["bbox_url"]
-        )
+        response = None
+        objects = []
 
-        df = self.spark_session.createDataFrame(data=response.json(), \
+        while len(objects) < 2500:
+            response = requests.get(
+                params=query,
+                url=self.config["bbox_url"]
+            )
+            objects += response.json()
+
+        df = self.spark_session.createDataFrame(data=objects, \
                                                 schema = bbox_struct)
 
         if self.config["debug"]:
             print("DataFrame with 2500 accomodation's objects")
             df.show()
 
-        df = self.flat_bbox_df(df)
 
         return df
-    
+        
     def flat_bbox_df(self, df):
 
-        df = df.select(col("kinds"), col("name"), 
-                                col("osm"),
+        df = df.select(col("xid"), col("kinds"), col("name"), 
                                 col("point.lon").alias("lon"),
                                 col("point.lat").alias("lat"),
+                                col("osm"),
                                 col("rate"),
-                                col("wikidata"),
-                                col("xid"))
+                                col("wikidata"))
 
         if self.config["debug"]:
             print("Flattened DataFrame")
             df.show()
-
+                
         return df
 
     def filter_by_col_keywords(self, df, col, keyword):
@@ -83,8 +89,6 @@ class OpenTripCrawler:
 
         df = df.withColumn('kinds_amount', size(split(df[col], ',')))
 
-        #df = df.groupBy(place_col).sum("kind_amounts")
-
         if self.config["debug"]:
 
             df.filter(df.name == 'Hotel Ginebra').show()
@@ -94,7 +98,6 @@ class OpenTripCrawler:
         return df
 
     def get_extra_accomodation_fields(self, df):
-
 
         xids_list = df.select('xid').rdd.flatMap(lambda x: x).collect()
 
@@ -113,9 +116,11 @@ class OpenTripCrawler:
                             response.get('image'),
                             response.get('wikipedia')
                     ))
+        
+        df = self.spark_session.createDataFrame(responses, \
+                                            schema = extra_fields_struct)
 
-        return self.flat_extra_fields_df(self.spark_session.createDataFrame(responses, \
-                                            schema = extra_fields_struct))
+        return df
     
     def flat_extra_fields_df(self, df):
         
@@ -136,13 +141,15 @@ class OpenTripCrawler:
                           col("image"),
                           col("wikipedia"))
 
-        if self.config["debug"]:
-            df.show()
+        #if self.config["debug"]:
+        df.show()
+
+        save_csv(df, "extraflatdf.csv")
 
         return df
     
     def merge_dfs(self, df1, df2, column):
-        return df1.join(df2, df1[column] ==  df2[column],"inner")
+        return df1.join(df2, df1[column] ==  df2[column], "inner").drop(df1.xid)
     
     def get_accomodations_df(self):
         return self.final_df
