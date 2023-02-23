@@ -2,7 +2,8 @@
 
 # How to run this repository:
 
-** Set Virtual Environment **
+
+## Set Virtual Environment
 
 1- In case of Ubuntu, first run *sudo apt install python3.8-venv*
 
@@ -18,7 +19,3 @@
 
 2- To run unittests, run *python3 sparkunittest.py*
 
-**FRQ-07**:
-
-As a bonus, which means this one is a nice to have and not mandatory, plot into a .jpg file the area where we have 
-searched this places as well as their positions (as leaflets or red dots, for example) 
