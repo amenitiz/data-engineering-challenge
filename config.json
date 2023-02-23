@@ -1,0 +1,10 @@
+{
+    "bbox": [2.028471, 2.283903, 41.315758, 41.451768],
+    "limit": 2500,
+    "kinds": "accomodations",
+    "bbox_url": "https://api.opentripmap.com/0.1/en/places/bbox",
+    "xid_url": "https://api.opentripmap.com/0.1/en/places/xid/",
+    "apikey": "5ae2e3f221c38a28845f05b6d815b48c87fb357da5a1ed52168480c1",
+    "format": "json",
+    "debug": false
+}
