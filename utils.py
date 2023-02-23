@@ -4,10 +4,11 @@ import plotly.express as px
 from pyspark.sql.types import FloatType
 from pyspark.sql import functions as F
 
+
 def check_path(filename):
     """
     Checks if filename path is usable.
-    
+
     Parameters
     ----------
     filename: str
@@ -24,13 +25,14 @@ def check_path(filename):
         try:
             os.makedirs(parent_dir)
         except:
-            raise OSError('Cannot save file: %s' % filename)
+            raise OSError("Cannot save file: %s" % filename)
     return filename
+
 
 def load_json(fname):
     """
     Load json file.
-    
+
     Parameters
     ----------
     fname: str
@@ -46,10 +48,11 @@ def load_json(fname):
         out = json.load(f)
     return out
 
-def save_csv(df, filename, format="csv", mode="overwrite", header = True):
+
+def save_csv(df, filename, format="csv", mode="overwrite", header=True):
     """
     Save DataFrame in csv format.
-    
+
     Parameters
     ----------
     filename: str
@@ -66,12 +69,15 @@ def save_csv(df, filename, format="csv", mode="overwrite", header = True):
     None
 
     """
-    df.repartition(1).write.option("header",header).format(format).mode(mode).save(filename)
+    df.repartition(1).write.option("header", header).format(format).mode(mode).save(
+        filename
+    )
+
 
 def generate_open_street_map(df, filename):
     """
     Plot Accomodations in Open Trip Map using plotly
-    
+
     Parameters
     ----------
     df: DataFrame
@@ -87,13 +93,9 @@ def generate_open_street_map(df, filename):
     df = df.withColumn("lon", F.col("lon").astype(FloatType()))
     df = df.withColumn("lat", F.col("lat").astype(FloatType()))
 
-    fig = px.scatter_mapbox(df.toPandas(), 
-                            lat='lat',
-                            lon='lon',
-                            color='name',
-                            zoom=13)
+    fig = px.scatter_mapbox(df.toPandas(), lat="lat", lon="lon", color="name", zoom=13)
 
-    fig.update_layout(mapbox_style='open-street-map')
+    fig.update_layout(mapbox_style="open-street-map")
 
     fig.show()
 

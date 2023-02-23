@@ -1,12 +1,19 @@
 import unittest
 from pyspark.sql import SparkSession
-from schemas import bbox_struct, extra_fields_struct, flat_bbox_struct, flat_extra_field_struct, kinds_bbox_struct, final_struct
+from schemas import (
+    bbox_struct,
+    extra_fields_struct,
+    flat_bbox_struct,
+    flat_extra_field_struct,
+    kinds_bbox_struct,
+    final_struct,
+)
 from opentripcrawler import OpenTripCrawler
 from utils import load_json, check_path
 from config_unitests import *
 
-class UnitTestsSpark(unittest.TestCase):
 
+class UnitTestsSpark(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
@@ -19,16 +26,14 @@ class UnitTestsSpark(unittest.TestCase):
 
         cls.open_object = OpenTripCrawler(load_json(check_path("config.json")))
 
-        cls.spark = (SparkSession
-                     .builder
-                     .master("local[*]")
-                     .appName("Unit-tests")
-                     .getOrCreate())
-    
+        cls.spark = (
+            SparkSession.builder.master("local[*]").appName("Unit-tests").getOrCreate()
+        )
+
     def run_asserts(self, transformed_df, expected_df):
         """
         Runs asserts for data types and counts.
-        
+
         Parameters
         ----------
         transformed_df: DataFrame
@@ -46,17 +51,27 @@ class UnitTestsSpark(unittest.TestCase):
         field_list = lambda fields: (fields.name, fields.dataType, fields.nullable)
         fields1 = [*map(field_list, transformed_df.schema.fields)]
         fields2 = [*map(field_list, expected_df.schema.fields)]
-        
+
         res = set(fields1) == set(fields2)
 
         self.assertTrue(res)
 
-        self.assertEqual(sorted(expected_df.collect()), sorted(transformed_df.collect()))
-    
-    def create_dataframes(self, input_data, input_schema, expected_data, expected_schema, input_data2 = None, expected_schema2 = None):
+        self.assertEqual(
+            sorted(expected_df.collect()), sorted(transformed_df.collect())
+        )
+
+    def create_dataframes(
+        self,
+        input_data,
+        input_schema,
+        expected_data,
+        expected_schema,
+        input_data2=None,
+        expected_schema2=None,
+    ):
         """
         Creates PySpark DataFrames.
-        
+
         Parameters
         ----------
         input_data: DataFrame
@@ -70,7 +85,7 @@ class UnitTestsSpark(unittest.TestCase):
 
         expected_schema: StructType
             Expected data schema.
-        
+
         input_data2: DataFrame (optional)
             Input data before transformation.
 
@@ -89,20 +104,24 @@ class UnitTestsSpark(unittest.TestCase):
         """
 
         input_df = self.spark.createDataFrame(data=input_data, schema=input_schema)
-        expected_df = self.spark.createDataFrame(data=expected_data, schema=expected_schema)
+        expected_df = self.spark.createDataFrame(
+            data=expected_data, schema=expected_schema
+        )
 
         if input_data2 and expected_schema2:
-            input_df2 = self.spark.createDataFrame(data=input_data2, schema=expected_schema2)
+            input_df2 = self.spark.createDataFrame(
+                data=input_data2, schema=expected_schema2
+            )
 
             return input_df, expected_df, input_df2
-    
+
         else:
             return input_df, expected_df
 
     def test_bbx(self):
         """
         Test flat_bbox_df function.
-        
+
         Parameters
         ----------
         None
@@ -112,8 +131,10 @@ class UnitTestsSpark(unittest.TestCase):
         None
 
         """
-        
-        input_df, expected_df = self.create_dataframes(input_data_bbx, bbox_struct, expected_data_bbx, flat_bbox_struct)
+
+        input_df, expected_df = self.create_dataframes(
+            input_data_bbx, bbox_struct, expected_data_bbx, flat_bbox_struct
+        )
 
         transformed_df = self.open_object.flat_bbox_df(input_df)
 
@@ -122,7 +143,7 @@ class UnitTestsSpark(unittest.TestCase):
     def test_filtering(self):
         """
         Test filter_by_col_keywords function.
-        
+
         Parameters
         ----------
         None
@@ -133,16 +154,23 @@ class UnitTestsSpark(unittest.TestCase):
 
         """
 
-        input_df, expected_df = self.create_dataframes(input_data_filtering, flat_bbox_struct, expected_data_filtering, flat_bbox_struct)
+        input_df, expected_df = self.create_dataframes(
+            input_data_filtering,
+            flat_bbox_struct,
+            expected_data_filtering,
+            flat_bbox_struct,
+        )
 
-        transformed_df = self.open_object.filter_by_col_keywords(input_df, "kinds", "skyscrapers")
+        transformed_df = self.open_object.filter_by_col_keywords(
+            input_df, "kinds", "skyscrapers"
+        )
 
         self.run_asserts(transformed_df, expected_df)
 
     def test_count(self):
         """
         Test count_column_per_place function.
-        
+
         Parameters
         ----------
         None
@@ -153,7 +181,9 @@ class UnitTestsSpark(unittest.TestCase):
 
         """
 
-        input_df, expected_df = self.create_dataframes(input_data_count, flat_bbox_struct, expected_data_count, kinds_bbox_struct)
+        input_df, expected_df = self.create_dataframes(
+            input_data_count, flat_bbox_struct, expected_data_count, kinds_bbox_struct
+        )
 
         transformed_df = self.open_object.count_column_per_place(input_df, "kinds")
 
@@ -162,7 +192,7 @@ class UnitTestsSpark(unittest.TestCase):
     def test_extra(self):
         """
         Test flat_extra_fields_df function.
-        
+
         Parameters
         ----------
         None
@@ -173,16 +203,21 @@ class UnitTestsSpark(unittest.TestCase):
 
         """
 
-        input_df, expected_df = self.create_dataframes(input_data_extra, extra_fields_struct, expected_data_extra, flat_extra_field_struct)
+        input_df, expected_df = self.create_dataframes(
+            input_data_extra,
+            extra_fields_struct,
+            expected_data_extra,
+            flat_extra_field_struct,
+        )
 
         transformed_df = self.open_object.flat_extra_fields_df(input_df)
 
         self.run_asserts(transformed_df, expected_df)
 
-    def test_final_dataframe(self):  
+    def test_final_dataframe(self):
         """
         Test merge_dfs function.
-        
+
         Parameters
         ----------
         None
@@ -193,7 +228,14 @@ class UnitTestsSpark(unittest.TestCase):
 
         """
 
-        input_df1, expected_df, input_df2 = self.create_dataframes(input_data_final1, kinds_bbox_struct, expected_data_final, final_struct, input_data_final2, flat_extra_field_struct)
+        input_df1, expected_df, input_df2 = self.create_dataframes(
+            input_data_final1,
+            kinds_bbox_struct,
+            expected_data_final,
+            final_struct,
+            input_data_final2,
+            flat_extra_field_struct,
+        )
 
         transformed_df = self.open_object.merge_dfs(input_df1, input_df2, "xid")
 
@@ -203,7 +245,7 @@ class UnitTestsSpark(unittest.TestCase):
     def tearDownClass(cls):
         """
         Stop Spark Session.
-        
+
         Parameters
         ----------
         None
@@ -215,5 +257,6 @@ class UnitTestsSpark(unittest.TestCase):
         """
         cls.spark.stop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

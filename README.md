@@ -13,7 +13,7 @@
 
 4- To install all dependencies run *pip install -r requirements.txt*
 
-** Run Project **
+## Run Project
 
 1- After setting up the Virtual Environment, run *python3 main.py*
 
